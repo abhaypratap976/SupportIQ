@@ -110,11 +110,8 @@ export async function startServer(port = PORT) {
   try {
     await connectDB();
 
-    // Auto-seed demo data if database is empty in development or memory server fallback
-    const dbStatus = getDBStatus();
-    if (process.env.NODE_ENV !== 'production' || dbStatus.isMemoryServer) {
-      await seedDatabase(false);
-    }
+    // Auto-seed essential demo accounts, articles, and tickets if missing
+    await seedDatabase(false);
 
     return new Promise((resolve, reject) => {
       serverInstance = app.listen(port, () => {

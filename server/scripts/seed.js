@@ -9,16 +9,9 @@ import { getInitialsDataUri } from '../../src/utils/avatarUtils.js';
 export async function seedDatabase(force = false) {
   await connectDB();
 
-  const userCount = await User.countDocuments();
-  if (userCount > 0 && !force) {
-    console.log('[Seed] Database already contains records. Skipping seed.');
-    return;
-  }
-
-  console.log('[Seed] Seeding database with initial SupportIQ data...');
-
   // Clear existing if force
   if (force) {
+    console.log('[Seed] Force flag enabled: clearing existing collections...');
     await Promise.all([
       User.deleteMany({}),
       Ticket.deleteMany({}),
@@ -27,8 +20,9 @@ export async function seedDatabase(force = false) {
     ]);
   }
 
-  // 1. Seed Users
+  // 1. Seed Users (Ensure essential demo accounts exist)
   const userMap = new Map(); // email -> User doc
+  let newUsersCount = 0;
   for (const u of DEMO_USERS) {
     let user = await User.findOne({ email: u.email.toLowerCase() });
     if (!user) {
@@ -43,10 +37,13 @@ export async function seedDatabase(force = false) {
         status: 'Active'
       });
       await user.save();
+      newUsersCount++;
     }
     userMap.set(u.email.toLowerCase(), user);
   }
-  console.log(`[Seed] Seeded ${userMap.size} users.`);
+  if (newUsersCount > 0) {
+    console.log(`[Seed] Provisioned ${newUsersCount} demo user accounts.`);
+  }
 
   // 2. Seed Articles
   let articleCount = 0;
