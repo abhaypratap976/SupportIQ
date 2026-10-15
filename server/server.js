@@ -38,18 +38,8 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-      if (!origin) return callback(null, true);
-      // In development or if matches CLIENT_URL, allow
-      if (
-        process.env.NODE_ENV !== 'production' ||
-        origin === CLIENT_URL ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:')
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error('CORS blocked by origin policy.'));
+      // Allow all origins dynamically (echoes requesting origin back, fully supporting credentials)
+      return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
