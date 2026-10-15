@@ -5,7 +5,8 @@ export const articleService = {
   async getAll() {
     try {
       const data = await apiClient.get('/articles');
-      if (Array.isArray(data)) return data;
+      if (Array.isArray(data) && data.length > 0) return data;
+      // Fallback to initial seed articles if database has no articles yet
       return storageService.getArticles();
     } catch {
       return storageService.getArticles();
