@@ -20,19 +20,24 @@ export async function connectDB() {
   const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
   if (uri) {
-    try {
-      console.log('[Database] Connecting to configured MongoDB URI...');
-      await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000
-      });
-      console.log('[Database] Connected to MongoDB successfully.');
-      return mongoose.connection;
-    } catch (err) {
-      console.warn(`[Database] Failed to connect to ${uri}: ${err.message}`);
-      if (process.env.NODE_ENV === 'production') {
-        throw err;
+    const hasPlaceholder = uri.includes('<db_password>') || uri.includes('<password>');
+    if (hasPlaceholder) {
+      console.warn('--------------------------------------------------');
+      console.warn('[Database] WARNING: MongoDB URI contains placeholder "<db_password>" or "<password>"!');
+      console.warn('[Database] Please replace "<db_password>" with your actual MongoDB user password in Render Environment settings.');
+      console.warn('--------------------------------------------------');
+    } else {
+      try {
+        console.log('[Database] Connecting to configured MongoDB URI...');
+        await mongoose.connect(uri, {
+          serverSelectionTimeoutMS: 5000
+        });
+        console.log('[Database] Connected to MongoDB successfully.');
+        return mongoose.connection;
+      } catch (err) {
+        console.warn(`[Database] Failed to connect to MongoDB URI: ${err.message}`);
+        console.log('[Database] Falling back to embedded MongoMemoryServer so the server stays online...');
       }
-      console.log('[Database] Falling back to embedded MongoMemoryServer for development/testing...');
     }
   }
 
